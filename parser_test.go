@@ -9,11 +9,6 @@ import (
 )
 
 func printValues(values *ConvCommit) {
-	if values.CommitMessage == nil {
-		fmt.Println("Commit message parser got no matches")
-		return
-	}
-
 	fmt.Println("results",
 		values.CommitMessage.Type,
 		values.CommitMessage.Modifier,
@@ -42,27 +37,37 @@ func TestConventionalCommitsParser(t *testing.T) {
 			{
 				name:                 "it fails when missing message",
 				commitMessage:        "feat",
-				expectedErrorMessage: "test:1:5: unexpected token \"<EOF>\" (expected <separator> Message)",
+				expectedErrorMessage: "test:1:5: unexpected token \"<EOF>\" (expected <separator> <message>)",
 			},
 			{
 				name:                 "it fails when missing <separator> ':'",
 				commitMessage:        "feat my message",
-				expectedErrorMessage: "test:1:5: unexpected token \" my message\" (expected <separator> Message)",
+				expectedErrorMessage: "test:1:5: unexpected token \" my message\" (expected <separator> <message>)",
 			},
 			{
-				name:                 "it fails when missing space between <separator> and Message",
-				commitMessage:        "feat:my message",
-				expectedErrorMessage: "test:1:5: unexpected token \":my message\" (expected <separator> Message)",
+				name:                 "it fails when missing space between <separator> and <message>",
+				commitMessage:        "feat:my message\n",
+				expectedErrorMessage: "test:1:5: unexpected token \":my message\" (expected <separator> <message>)",
+			},
+			{
+				name: "it fails when missing space between <separator> and Message (multiple lines)",
+				commitMessage: `feat:
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch main"b
+# Your branch is up to date with 'origin/main'.`,
+				expectedErrorMessage: "\\n# Please enter the commit message for your changes. Lines starting",
 			},
 		}
 
 		for _, tcase := range testCases {
 			td.Run(tcase.name, func(tt *testing.T) {
-				tt.Skip()
-				values, err := ConvetionalCommitParse(fileName, tcase.commitMessage)
+				_, err := ConvetionalCommitParse(fileName, tcase.commitMessage)
 
 				if err == nil {
-					tt.Fatal("Should have failed.")
+					tt.Fatal("Should have failed.\n")
 					return
 				}
 
@@ -71,8 +76,6 @@ func TestConventionalCommitsParser(t *testing.T) {
 					tt.Fatal(formatFailureString(tcase.expectedErrorMessage, errorMessage))
 					return
 				}
-
-				printValues(values)
 			})
 		}
 
@@ -84,7 +87,7 @@ func TestConventionalCommitsParser(t *testing.T) {
 			}
 
 			if err == nil {
-				tt.Fatal("Should have failed.")
+				tt.Fatal("Should have failed.\n")
 				return
 			}
 
@@ -100,7 +103,6 @@ func TestConventionalCommitsParser(t *testing.T) {
 	})
 
 	t.Run("correct syntax", func(td *testing.T) {
-		td.Skip("temp")
 		testCases := []struct {
 			name                  string
 			commitMessage         string
@@ -108,14 +110,12 @@ func TestConventionalCommitsParser(t *testing.T) {
 		}{
 			{
 				name:          "it returns a parsed Conventional Commit",
-				commitMessage: "feat: some foo bar",
+				commitMessage: "feat: some foo bar\n\n",
 				expectedCommitMessage: CommitMessage{
 					Type:      "feat",
 					Modifier:  "",
 					Separator: ": ",
-					Message: Message{
-						Value: "some foo bar",
-					},
+					Message:   "some foo bar",
 					Pos: lexer.Position{
 						Filename: "test",
 						Offset:   0,
@@ -132,14 +132,12 @@ func TestConventionalCommitsParser(t *testing.T) {
 			},
 			{
 				name:          "it accepts modifiers for type",
-				commitMessage: "feat!: some foo bar",
+				commitMessage: "feat!: some foo bar\n\n",
 				expectedCommitMessage: CommitMessage{
 					Type:      "feat",
 					Modifier:  "!",
 					Separator: ": ",
-					Message: Message{
-						Value: "some foo bar",
-					},
+					Message:   "some foo bar",
 					Pos: lexer.Position{
 						Filename: "test",
 						Offset:   0,

@@ -16,8 +16,9 @@ var (
 	convCommitLexer = lexer.MustSimple([]lexer.SimpleRule{
 		{`CommitType`, `(feat|fix)`},
 		{`CommitTypeModifier`, `!`},
-		{`Separator`, `:\s+`},
-		{`Message`, `.*`},
+		{`Separator`, `:\s`},
+		{`Message`, `.*[^\n]`},
+		{`Description`, `[^#].*`},
 		{"comment", `[#][^\n]*`},
 	})
 
@@ -29,7 +30,8 @@ var (
 type ConvCommit struct {
 	Pos           lexer.Position
 	EndPos        lexer.Position
-	CommitMessage *CommitMessage `@@`
+	CommitMessage *CommitMessage `@@"\n"`
+	Description   []*Description `@@*`
 	Comments      []*Comment     `@@*`
 }
 
@@ -42,6 +44,10 @@ func (cc *ConvCommit) String() string {
 	return string(values)
 }
 
+type Description struct {
+	Value string `@Description`
+}
+
 type Comment struct {
 	Value string `@comment`
 }
@@ -49,10 +55,10 @@ type Comment struct {
 type CommitMessage struct {
 	Pos       lexer.Position
 	EndPos    lexer.Position
-	Type      string  `@CommitType`
-	Modifier  string  `@CommitTypeModifier?`
-	Separator string  `@Separator`
-	Message   Message `@@`
+	Type      string `@CommitType`
+	Modifier  string `@CommitTypeModifier?`
+	Separator string `@Separator`
+	Message   string `@Message`
 }
 
 func (c *CommitMessage) String() string {
@@ -62,10 +68,6 @@ func (c *CommitMessage) String() string {
 		return ""
 	}
 	return string(values)
-}
-
-type Message struct {
-	Value string `@Message`
 }
 
 type ViolationError struct {
