@@ -29,16 +29,17 @@ var (
 	convCommitLexer = lexer.MustSimple([]lexer.SimpleRule{
 		// Fixed grammar
 		{"Newline", `\n`},
-		{"Whitespace", `\s`},
+		{"Whitespace", `[\s\t]+`},
 		{"Colon", `:`},
-		{"Comment", `[#][^\n]*`},
+		{"Comment", `^#[^\n]*`},
 
 		// Keywords
 		{"CommitType", `(feat|fix|chore|ci|docs|refactor|test)`},
 		{"CommitScope", `\(.*\)`},
 		{"CommitTypeModifier", `!`},
 		{"Message", `.*[^\n]`},
-		{"Description", `[^#].*\n`},
+
+		{"Description", `[^#].*`},
 	})
 
 	conventionalCommitParser = participle.MustBuild[ConvCommit](
@@ -63,7 +64,8 @@ func (cc *ConvCommit) String() string {
 }
 
 type Description struct {
-	Value string "@Description"
+	Value   string "@Description"
+	Newline string `@Newline?`
 }
 
 type Comment struct {
@@ -150,7 +152,13 @@ func NewViolationError(filename string, origError error) *ViolationError {
 }
 
 func ConvetionalCommitParse(file, message string) (*ConvCommit, error) {
-	values, err := conventionalCommitParser.ParseString(file, message)
+	// It ignores git diff when parsing.
+	gitDiffStartPoint := strings.Index(message, "diff --git")
+	if gitDiffStartPoint <= 0 {
+		gitDiffStartPoint = len(message)
+	}
+
+	values, err := conventionalCommitParser.ParseString(file, message[0:gitDiffStartPoint])
 
 	if err != nil {
 		return values, NewViolationError(file, err)

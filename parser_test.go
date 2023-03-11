@@ -160,6 +160,42 @@ func TestConventionalCommitsParser(t *testing.T) {
 					Newline:    "\n\n",
 				},
 			},
+			{
+				name: "it accepts git diff",
+				commitMessage: `feat!: foobar
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+diff --git a/parser.go b/parser.go
+index a4128be..3fcc654 100644
+--- a/parser.go
++++ b/parser.go
+@@ -32,6 +32,7 @@ var (
+ 		{"Whitespace", "\s"},
+ 		{"Colon", ":"},
+ 		{"Comment", "[#][^\n]*"},
++		{"GitDiff", "^diff.*\n"},
+
+ 		// Keywords
+ 		{"CommitType", "(feat|fix|chore|ci|docs|refactor|test)"},
+@@ -51,6 +52,7 @@ type ConvCommit struct {
+ 	CommitMessage *CommitMessage "@@"
+ 	Description   []*Description "@@*"
+ 	Comments      []*Comment     "@@*"
++	Diff          []*string      "@GitDiff?"
+ }
+
+ func (cc *ConvCommit) String() string {`,
+				expectedCommitMessage: CommitMessage{
+					Type:       "feat",
+					Scope:      "",
+					Modifier:   "!",
+					Colon:      ":",
+					Whitespace: " ",
+					Message:    "foobar",
+					Newline:    "\n\n",
+				},
+			},
 		}
 
 		for _, tcase := range testCases {
@@ -167,6 +203,7 @@ func TestConventionalCommitsParser(t *testing.T) {
 				values, err := ConvetionalCommitParse(fileName, tcase.commitMessage)
 
 				if err != nil {
+					fmt.Println("parsed:", values)
 					tt.Fatal("ERROR: Should not have failed.\n", err.Error(), "\n")
 					return
 				}
