@@ -35,13 +35,8 @@ configs.ccommits_pls = {
     },
     filetypes = { "gitcommit" },
     root_dir = util.path.dirname,
-    -- init_options = {
-    --   command = { "ffff", "fooooo" },
-    -- },
     autostart = true,
   },
-  -- on_new_config = function(new_config) end;
-  -- on_attach = function(client, bufnr) end;
   docs = {
     description = [[
     Language Server Protocol for Conventional Commits.
@@ -58,7 +53,7 @@ lspconfig.ccommits_pls.setup {
 }
 
 
--- this section is not necessary
+-- This section depends on your configuration.
 local servers = {
   gopls = {},
 }
