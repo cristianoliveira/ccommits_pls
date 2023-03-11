@@ -17,7 +17,8 @@ func AnalizeContent(content string) ([]protocol.Diagnostic, error) {
 		return diagnostics, nil
 	}
 
-	_, err := ConvetionalCommitParse("COMMIT_MESSAGE", content)
+	log.Println("CCommits: content", content)
+	_, err := ConvetionalCommitParse("COMMIT_EDITMSG", content)
 	if err != nil {
 		errMessage := err.Error()
 		log.Println("CCommits: Error", errMessage)
