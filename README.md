@@ -29,8 +29,9 @@ local configs = require("lspconfig.configs")
 
 configs.ccommits_pls = {
   default_config = {
+    -- Paste here the path to the lsp bin
     cmd = {
-      "/Users/cristianoliveira/other/ccommits_pls/bin/ccommits_pls",
+      "/Users/youruser/ccommits_pls/bin/ccommits_pls",
     },
     filetypes = { "gitcommit" },
     root_dir = util.path.dirname,
