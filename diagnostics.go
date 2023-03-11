@@ -44,7 +44,7 @@ func AnalizeContent(content string) ([]protocol.Diagnostic, error) {
 				},
 			},
 
-			Message: fmt.Sprintf("Violation: %s", errMessage), // err.Error(),
+			Message: fmt.Sprintf("Issue: %s", errMessage), // err.Error(),
 		}
 
 		diagnostics = append(diagnostics, errorDiagnostic)

@@ -11,7 +11,7 @@ func printValues(values *ConvCommit) {
 		values.CommitTitle.Type,
 		values.CommitTitle.Modifier,
 		values.CommitTitle.Colon,
-		values.CommitTitle.CommitMessage,
+		values.CommitTitle.CommitDescription,
 	)
 }
 
@@ -35,7 +35,7 @@ func TestConventionalCommitsParser(t *testing.T) {
 			{
 				name:                 "it fails when missing message",
 				commitMessage:        "feat",
-				expectedErrorMessage: "unexpected token \"<EOF>\" (expected <colon> <whitespace> <commitmessage> <newline>+)",
+				expectedErrorMessage: "unexpected token \"<EOF>\" (expected <colon> <whitespace> <commitdescription> <newline>+)",
 			},
 			{
 				name:                 "it fails when missing <colon> ':'",
@@ -43,12 +43,12 @@ func TestConventionalCommitsParser(t *testing.T) {
 				expectedErrorMessage: "unexpected token \" \"",
 			},
 			{
-				name:                 "it fails when missing space between <colon> and <commitmessage>",
+				name:                 "it fails when missing space between <colon> and <commitdescription>",
 				commitMessage:        "feat:my message\n",
 				expectedErrorMessage: "unexpected token \"my message\"",
 			},
 			{
-				name: "it fails when missing space between <colon> and CommitMessage (multiple lines)",
+				name: "it fails when missing space between <colon> and CommitDescription (multiple lines)",
 				commitMessage: `feat:without space
 
 			# Please enter the commit message for your changes. Lines starting
@@ -56,7 +56,7 @@ func TestConventionalCommitsParser(t *testing.T) {
 			#
 			# On branch main"b
 			# Your branch is up to date with 'origin/main'.`,
-				expectedErrorMessage: "unexpected token \"without space\" (expected <whitespace> <commitmessage> <newline>+)",
+				expectedErrorMessage: "unexpected token \"without space\" (expected <whitespace> <commitdescription> <newline>+)",
 			},
 		}
 
@@ -110,37 +110,37 @@ func TestConventionalCommitsParser(t *testing.T) {
 				name:          "it returns a parsed Conventional Commit",
 				commitMessage: "feat: some foo bar\n#Please...\n",
 				expectedCommitMessage: CommitTitle{
-					Type:          "feat",
-					Modifier:      "",
-					Colon:         ":",
-					Whitespace:    " ",
-					CommitMessage: "some foo bar",
-					Newline:       "\n",
+					Type:              "feat",
+					Modifier:          "",
+					Colon:             ":",
+					Whitespace:        " ",
+					CommitDescription: "some foo bar",
+					Newline:           "\n",
 				},
 			},
 			{
 				name:          "it accepts modifiers for type",
 				commitMessage: "feat!: some foo bar\n\n# Please ...\n",
 				expectedCommitMessage: CommitTitle{
-					Type:          "feat",
-					Modifier:      "!",
-					Colon:         ":",
-					Whitespace:    " ",
-					CommitMessage: "some foo bar",
-					Newline:       "\n\n",
+					Type:              "feat",
+					Modifier:          "!",
+					Colon:             ":",
+					Whitespace:        " ",
+					CommitDescription: "some foo bar",
+					Newline:           "\n\n",
 				},
 			},
 			{
 				name:          "it accepts scope for type",
 				commitMessage: "feat(foobarbaz)!: some foo bar\n\n# Please ...\n",
 				expectedCommitMessage: CommitTitle{
-					Type:          "feat",
-					Scope:         "foobarbaz",
-					Modifier:      "!",
-					Colon:         ":",
-					Whitespace:    " ",
-					CommitMessage: "some foo bar",
-					Newline:       "\n\n",
+					Type:              "feat",
+					Scope:             "foobarbaz",
+					Modifier:          "!",
+					Colon:             ":",
+					Whitespace:        " ",
+					CommitDescription: "some foo bar",
+					Newline:           "\n\n",
 				},
 			},
 			{
@@ -151,13 +151,13 @@ func TestConventionalCommitsParser(t *testing.T) {
 # with '#' will be ignored, and an empty message aborts the commit.
 `,
 				expectedCommitMessage: CommitTitle{
-					Type:          "feat",
-					Scope:         "",
-					Modifier:      "!",
-					Colon:         ":",
-					Whitespace:    " ",
-					CommitMessage: "foobar",
-					Newline:       "\n\n",
+					Type:              "feat",
+					Scope:             "",
+					Modifier:          "!",
+					Colon:             ":",
+					Whitespace:        " ",
+					CommitDescription: "foobar",
+					Newline:           "\n\n",
 				},
 			},
 			{
@@ -187,13 +187,13 @@ index a4128be..3fcc654 100644
 
  func (cc *ConvCommit) String() string {`,
 				expectedCommitMessage: CommitTitle{
-					Type:          "feat",
-					Scope:         "",
-					Modifier:      "!",
-					Colon:         ":",
-					Whitespace:    " ",
-					CommitMessage: "foobar",
-					Newline:       "\n\n",
+					Type:              "feat",
+					Scope:             "",
+					Modifier:          "!",
+					Colon:             ":",
+					Whitespace:        " ",
+					CommitDescription: "foobar",
+					Newline:           "\n\n",
 				},
 			},
 		}

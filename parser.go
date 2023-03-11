@@ -37,7 +37,7 @@ var (
 		{"CommitType", `(feat|fix|chore|ci|docs|refactor|test)`},
 		{"CommitScope", `\(.*\)`},
 		{"CommitTypeModifier", `!`},
-		{"CommitMessage", `.*[^\n]`},
+		{"CommitDescription", `.*[^\n]`},
 
 		{"CommitDetails", `[^#].*`},
 	})
@@ -74,13 +74,13 @@ type Comment struct {
 }
 
 type CommitTitle struct {
-	Type          string "@CommitType"
-	Scope         string "@CommitScope?"
-	Modifier      string "@CommitTypeModifier?"
-	Colon         string "@Colon"
-	Whitespace    string "@Whitespace"
-	CommitMessage string `@CommitMessage`
-	Newline       string `@Newline+`
+	Type              string "@CommitType"
+	Scope             string "@CommitScope?"
+	Modifier          string "@CommitTypeModifier?"
+	Colon             string "@Colon"
+	Whitespace        string "@Whitespace"
+	CommitDescription string `@CommitDescription`
+	Newline           string `@Newline+`
 }
 
 func (c *CommitTitle) String() string {
