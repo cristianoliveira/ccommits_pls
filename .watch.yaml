@@ -1,0 +1,14 @@
+## Funzzy events file
+# more details see: https://github.com/cristianoliveira/funzzy
+#
+# list here all the events and the commands that it should execute
+
+# - name: Run main
+#   run: "make build && ./bin/ccommits_pls"
+#   change: "**/*.go"
+#   run_on_init: true
+
+- name: Run main
+  run: "make test"
+  change: "**/*.go"
+  run_on_init: true
