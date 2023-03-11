@@ -67,7 +67,8 @@ type Description struct {
 }
 
 type Comment struct {
-	Value string "@Comment"
+	Value   string "@Comment"
+	Newline string `@Newline?`
 }
 
 type CommitMessage struct {

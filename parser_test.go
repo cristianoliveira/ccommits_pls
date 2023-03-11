@@ -108,7 +108,7 @@ func TestConventionalCommitsParser(t *testing.T) {
 		}{
 			{
 				name:          "it returns a parsed Conventional Commit",
-				commitMessage: "feat: some foo bar\n",
+				commitMessage: "feat: some foo bar\n#Please...\n",
 				expectedCommitMessage: CommitMessage{
 					Type:       "feat",
 					Modifier:   "",
@@ -120,7 +120,7 @@ func TestConventionalCommitsParser(t *testing.T) {
 			},
 			{
 				name:          "it accepts modifiers for type",
-				commitMessage: "feat!: some foo bar\n\n# Please",
+				commitMessage: "feat!: some foo bar\n\n# Please ...\n",
 				expectedCommitMessage: CommitMessage{
 					Type:       "feat",
 					Modifier:   "!",
@@ -132,7 +132,7 @@ func TestConventionalCommitsParser(t *testing.T) {
 			},
 			{
 				name:          "it accepts scope for type",
-				commitMessage: "feat(foobarbaz)!: some foo bar\n\n",
+				commitMessage: "feat(foobarbaz)!: some foo bar\n\n# Please ...\n",
 				expectedCommitMessage: CommitMessage{
 					Type:       "feat",
 					Scope:      "foobarbaz",
@@ -140,6 +140,23 @@ func TestConventionalCommitsParser(t *testing.T) {
 					Colon:      ":",
 					Whitespace: " ",
 					Message:    "some foo bar",
+					Newline:    "\n\n",
+				},
+			},
+			{
+				name: "it accepts scope for type",
+				commitMessage: `feat!: foobar
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+`,
+				expectedCommitMessage: CommitMessage{
+					Type:       "feat",
+					Scope:      "",
+					Modifier:   "!",
+					Colon:      ":",
+					Whitespace: " ",
+					Message:    "foobar",
 					Newline:    "\n\n",
 				},
 			},
