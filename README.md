@@ -1,6 +1,6 @@
 # ccommits_pls
 
-Conventional Commits Language Server (or Conventional Commits "pls")
+Conventional Commits Language Server (or Conventional Commits "pls") (inspired by [gopls](https://github.com/golang/tools/tree/master/gopls))
 
 ## Running for testing
 
