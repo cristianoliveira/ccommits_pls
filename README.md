@@ -51,27 +51,15 @@ configs.ccommits_pls = {
   },
 }
 
-local lsp_flags = {
-  -- This is the default in Nvim 0.7+
-  debounce_text_changes = 150,
+lspconfig.ccommits_pls.setup {
+  on_attach = Lsp_on_attach, -- see ../mappings/lsp.lua
+  flags = lsp_flags,
 }
 
-local servers = {
-  dockerls = {},
-  gopls = {},
-  -- pyright = {},
-  rust_analyzer = {},
-  tsserver = {},
 
-  lua_ls = {
-    Lua = {
-      workspace = { checkThirdParty = false },
-      telemetry = { enable = false },
-      diagnostics = {
-        globals = { 'vim' }
-      }
-    },
-  },
+-- this section is not necessary
+local servers = {
+  gopls = {},
 }
 
 mason_lspconfig.setup {
@@ -86,10 +74,5 @@ mason_lspconfig.setup_handlers {
       flags = lsp_flags,
     }
   end,
-}
-
-lspconfig.ccommits_pls.setup {
-  on_attach = Lsp_on_attach, -- see ../mappings/lsp.lua
-  flags = lsp_flags,
 }
 ``
