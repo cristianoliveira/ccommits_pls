@@ -8,10 +8,10 @@ import (
 
 func printValues(values *ConvCommit) {
 	fmt.Println("results",
-		values.CommitMessage.Type,
-		values.CommitMessage.Modifier,
-		values.CommitMessage.Colon,
-		values.CommitMessage.Message,
+		values.CommitTitle.Type,
+		values.CommitTitle.Modifier,
+		values.CommitTitle.Colon,
+		values.CommitTitle.CommitMessage,
 	)
 }
 
@@ -35,7 +35,7 @@ func TestConventionalCommitsParser(t *testing.T) {
 			{
 				name:                 "it fails when missing message",
 				commitMessage:        "feat",
-				expectedErrorMessage: "unexpected token \"<EOF>\" (expected <colon> <whitespace> <message> <newline>+)",
+				expectedErrorMessage: "unexpected token \"<EOF>\" (expected <colon> <whitespace> <commitmessage> <newline>+)",
 			},
 			{
 				name:                 "it fails when missing <colon> ':'",
@@ -43,12 +43,12 @@ func TestConventionalCommitsParser(t *testing.T) {
 				expectedErrorMessage: "unexpected token \" \"",
 			},
 			{
-				name:                 "it fails when missing space between <colon> and <message>",
+				name:                 "it fails when missing space between <colon> and <commitmessage>",
 				commitMessage:        "feat:my message\n",
 				expectedErrorMessage: "unexpected token \"my message\"",
 			},
 			{
-				name: "it fails when missing space between <colon> and Message (multiple lines)",
+				name: "it fails when missing space between <colon> and CommitMessage (multiple lines)",
 				commitMessage: `feat:without space
 
 			# Please enter the commit message for your changes. Lines starting
@@ -56,7 +56,7 @@ func TestConventionalCommitsParser(t *testing.T) {
 			#
 			# On branch main"b
 			# Your branch is up to date with 'origin/main'.`,
-				expectedErrorMessage: "unexpected token \"without space\" (expected <whitespace> <message> <newline>+)",
+				expectedErrorMessage: "unexpected token \"without space\" (expected <whitespace> <commitmessage> <newline>+)",
 			},
 		}
 
@@ -104,43 +104,43 @@ func TestConventionalCommitsParser(t *testing.T) {
 		testCases := []struct {
 			name                  string
 			commitMessage         string
-			expectedCommitMessage CommitMessage
+			expectedCommitMessage CommitTitle
 		}{
 			{
 				name:          "it returns a parsed Conventional Commit",
 				commitMessage: "feat: some foo bar\n#Please...\n",
-				expectedCommitMessage: CommitMessage{
-					Type:       "feat",
-					Modifier:   "",
-					Colon:      ":",
-					Whitespace: " ",
-					Message:    "some foo bar",
-					Newline:    "\n",
+				expectedCommitMessage: CommitTitle{
+					Type:          "feat",
+					Modifier:      "",
+					Colon:         ":",
+					Whitespace:    " ",
+					CommitMessage: "some foo bar",
+					Newline:       "\n",
 				},
 			},
 			{
 				name:          "it accepts modifiers for type",
 				commitMessage: "feat!: some foo bar\n\n# Please ...\n",
-				expectedCommitMessage: CommitMessage{
-					Type:       "feat",
-					Modifier:   "!",
-					Colon:      ":",
-					Whitespace: " ",
-					Message:    "some foo bar",
-					Newline:    "\n\n",
+				expectedCommitMessage: CommitTitle{
+					Type:          "feat",
+					Modifier:      "!",
+					Colon:         ":",
+					Whitespace:    " ",
+					CommitMessage: "some foo bar",
+					Newline:       "\n\n",
 				},
 			},
 			{
 				name:          "it accepts scope for type",
 				commitMessage: "feat(foobarbaz)!: some foo bar\n\n# Please ...\n",
-				expectedCommitMessage: CommitMessage{
-					Type:       "feat",
-					Scope:      "foobarbaz",
-					Modifier:   "!",
-					Colon:      ":",
-					Whitespace: " ",
-					Message:    "some foo bar",
-					Newline:    "\n\n",
+				expectedCommitMessage: CommitTitle{
+					Type:          "feat",
+					Scope:         "foobarbaz",
+					Modifier:      "!",
+					Colon:         ":",
+					Whitespace:    " ",
+					CommitMessage: "some foo bar",
+					Newline:       "\n\n",
 				},
 			},
 			{
@@ -150,14 +150,14 @@ func TestConventionalCommitsParser(t *testing.T) {
 # Please enter the commit message for your changes. Lines starting
 # with '#' will be ignored, and an empty message aborts the commit.
 `,
-				expectedCommitMessage: CommitMessage{
-					Type:       "feat",
-					Scope:      "",
-					Modifier:   "!",
-					Colon:      ":",
-					Whitespace: " ",
-					Message:    "foobar",
-					Newline:    "\n\n",
+				expectedCommitMessage: CommitTitle{
+					Type:          "feat",
+					Scope:         "",
+					Modifier:      "!",
+					Colon:         ":",
+					Whitespace:    " ",
+					CommitMessage: "foobar",
+					Newline:       "\n\n",
 				},
 			},
 			{
@@ -179,21 +179,21 @@ index a4128be..3fcc654 100644
  		// Keywords
  		{"CommitType", "(feat|fix|chore|ci|docs|refactor|test)"},
 @@ -51,6 +52,7 @@ type ConvCommit struct {
- 	CommitMessage *CommitMessage "@@"
- 	Description   []*Description "@@*"
+ 	CommitTitle *CommitTitle "@@"
+ 	CommitDetails   []*CommitDetails "@@*"
  	Comments      []*Comment     "@@*"
 +	Diff          []*string      "@GitDiff?"
  }
 
  func (cc *ConvCommit) String() string {`,
-				expectedCommitMessage: CommitMessage{
-					Type:       "feat",
-					Scope:      "",
-					Modifier:   "!",
-					Colon:      ":",
-					Whitespace: " ",
-					Message:    "foobar",
-					Newline:    "\n\n",
+				expectedCommitMessage: CommitTitle{
+					Type:          "feat",
+					Scope:         "",
+					Modifier:      "!",
+					Colon:         ":",
+					Whitespace:    " ",
+					CommitMessage: "foobar",
+					Newline:       "\n\n",
 				},
 			},
 		}
@@ -208,17 +208,17 @@ index a4128be..3fcc654 100644
 					return
 				}
 
-				if values.CommitMessage == nil {
+				if values.CommitTitle == nil {
 					tt.Fatal("Empty values.", values)
 				}
 
-				commitMessage := values.CommitMessage
+				commitMessage := values.CommitTitle
 
 				fmt.Println(commitMessage)
 
 				if commitMessage.String() != tcase.expectedCommitMessage.String() {
 					tt.Fatal(
-						"CommitMessage doesn't match.",
+						"CommitTitle doesn't match.",
 						formatFailureString(
 							tcase.expectedCommitMessage.String(),
 							commitMessage.String(),

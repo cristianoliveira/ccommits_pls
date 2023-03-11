@@ -37,9 +37,9 @@ var (
 		{"CommitType", `(feat|fix|chore|ci|docs|refactor|test)`},
 		{"CommitScope", `\(.*\)`},
 		{"CommitTypeModifier", `!`},
-		{"Message", `.*[^\n]`},
+		{"CommitMessage", `.*[^\n]`},
 
-		{"Description", `[^#].*`},
+		{"CommitDetails", `[^#].*`},
 	})
 
 	conventionalCommitParser = participle.MustBuild[ConvCommit](
@@ -49,9 +49,9 @@ var (
 )
 
 type ConvCommit struct {
-	CommitMessage *CommitMessage `@@`
-	Description   []*Description `@@*`
-	Comments      []*Comment     `@@*`
+	CommitTitle   *CommitTitle     `@@`
+	CommitDetails []*CommitDetails `@@*`
+	Comments      []*Comment       `@@*`
 }
 
 func (cc *ConvCommit) String() string {
@@ -63,8 +63,8 @@ func (cc *ConvCommit) String() string {
 	return string(values)
 }
 
-type Description struct {
-	Value   string "@Description"
+type CommitDetails struct {
+	Value   string "@CommitDetails"
 	Newline string `@Newline?`
 }
 
@@ -73,17 +73,17 @@ type Comment struct {
 	Newline string `@Newline?`
 }
 
-type CommitMessage struct {
-	Type       string "@CommitType"
-	Scope      string "@CommitScope?"
-	Modifier   string "@CommitTypeModifier?"
-	Colon      string "@Colon"
-	Whitespace string "@Whitespace"
-	Message    string `@Message`
-	Newline    string `@Newline+`
+type CommitTitle struct {
+	Type          string "@CommitType"
+	Scope         string "@CommitScope?"
+	Modifier      string "@CommitTypeModifier?"
+	Colon         string "@Colon"
+	Whitespace    string "@Whitespace"
+	CommitMessage string `@CommitMessage`
+	Newline       string `@Newline+`
 }
 
-func (c *CommitMessage) String() string {
+func (c *CommitTitle) String() string {
 	values, err := json.Marshal(c)
 	if err != nil {
 		fmt.Println("Error while stringifying values: ", err.Error())
