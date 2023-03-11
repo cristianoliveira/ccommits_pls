@@ -118,6 +118,13 @@ func (ep *ViolationError) Position() ViolationPosition {
 	re := regexp.MustCompile(ep.FileName + `:(\d):(\d):`)
 	match := re.FindStringSubmatch(errorMessage)
 
+	if len(match) < 3 {
+		return ViolationPosition{
+			Row: 0,
+			Col: 0,
+		}
+	}
+
 	row, err := strconv.Atoi(match[1])
 	if err != nil {
 		fmt.Println("Error while finding row position", errorMessage)
