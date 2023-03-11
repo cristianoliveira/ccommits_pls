@@ -5,16 +5,30 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
 )
 
+func RemoveParentesis(types ...string) participle.Option {
+	if len(types) == 0 {
+		types = []string{"String"}
+	}
+	return participle.Map(func(t lexer.Token) (lexer.Token, error) {
+		value := strings.TrimPrefix(strings.TrimSuffix(t.Value, ")"), "(")
+
+		t.Value = value
+		return t, nil
+	}, types...)
+}
+
 // Simple Conventional Commit v1.0.0 specification parser
 // https://www.conventionalcommits.org/en/v1.0.0/#specification
 var (
 	convCommitLexer = lexer.MustSimple([]lexer.SimpleRule{
-		{`CommitType`, `(feat|fix)`},
+		{`CommitType`, `(feat|fix|chore|ci|docs|refactor|test)`},
+		{`CommitScope`, `\(.*\)`},
 		{`CommitTypeModifier`, `!`},
 		{`Separator`, `:\s`},
 		{`Message`, `.*[^\n]`},
@@ -24,12 +38,11 @@ var (
 
 	conventionalCommitParser = participle.MustBuild[ConvCommit](
 		participle.Lexer(convCommitLexer),
+		RemoveParentesis("CommitScope"),
 	)
 )
 
 type ConvCommit struct {
-	Pos           lexer.Position
-	EndPos        lexer.Position
 	CommitMessage *CommitMessage `@@"\n"`
 	Description   []*Description `@@*`
 	Comments      []*Comment     `@@*`
@@ -53,9 +66,8 @@ type Comment struct {
 }
 
 type CommitMessage struct {
-	Pos       lexer.Position
-	EndPos    lexer.Position
 	Type      string `@CommitType`
+	Scope     string `@CommitScope?`
 	Modifier  string `@CommitTypeModifier?`
 	Separator string `@Separator`
 	Message   string `@Message`

@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 	"testing"
-
-	"github.com/alecthomas/participle/v2/lexer"
 )
 
 func printValues(values *ConvCommit) {
@@ -51,14 +49,14 @@ func TestConventionalCommitsParser(t *testing.T) {
 			},
 			{
 				name: "it fails when missing space between <separator> and Message (multiple lines)",
-				commitMessage: `feat:
+				commitMessage: `feat:without space
 
 # Please enter the commit message for your changes. Lines starting
 # with '#' will be ignored, and an empty message aborts the commit.
 #
 # On branch main"b
 # Your branch is up to date with 'origin/main'.`,
-				expectedErrorMessage: "\\n# Please enter the commit message for your changes. Lines starting",
+				expectedErrorMessage: "test:1:5: unexpected token \":without space\" (expected <separator> <message>)",
 			},
 		}
 
@@ -116,18 +114,6 @@ func TestConventionalCommitsParser(t *testing.T) {
 					Modifier:  "",
 					Separator: ": ",
 					Message:   "some foo bar",
-					Pos: lexer.Position{
-						Filename: "test",
-						Offset:   0,
-						Line:     1,
-						Column:   1,
-					},
-					EndPos: lexer.Position{
-						Filename: "test",
-						Offset:   18,
-						Line:     1,
-						Column:   19,
-					},
 				},
 			},
 			{
@@ -138,18 +124,17 @@ func TestConventionalCommitsParser(t *testing.T) {
 					Modifier:  "!",
 					Separator: ": ",
 					Message:   "some foo bar",
-					Pos: lexer.Position{
-						Filename: "test",
-						Offset:   0,
-						Line:     1,
-						Column:   1,
-					},
-					EndPos: lexer.Position{
-						Filename: "test",
-						Offset:   19,
-						Line:     1,
-						Column:   20,
-					},
+				},
+			},
+			{
+				name:          "it accepts scope for type",
+				commitMessage: "feat(foobarbaz)!: some foo bar\n\n",
+				expectedCommitMessage: CommitMessage{
+					Type:      "feat",
+					Scope:     "foobarbaz",
+					Modifier:  "!",
+					Separator: ": ",
+					Message:   "some foo bar",
 				},
 			},
 		}
