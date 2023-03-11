@@ -27,13 +27,18 @@ func RemoveParentesis(types ...string) participle.Option {
 // https://www.conventionalcommits.org/en/v1.0.0/#specification
 var (
 	convCommitLexer = lexer.MustSimple([]lexer.SimpleRule{
-		{`CommitType`, `(feat|fix|chore|ci|docs|refactor|test)`},
-		{`CommitScope`, `\(.*\)`},
-		{`CommitTypeModifier`, `!`},
-		{`Separator`, `:\s`},
-		{`Message`, `.*[^\n]`},
-		{`Description`, `[^#].*`},
-		{"comment", `[#][^\n]*`},
+		// Fixed grammar
+		{"Newline", `\n`},
+		{"Whitespace", `\s`},
+		{"Colon", `:`},
+		{"Comment", `[#][^\n]*`},
+
+		// Keywords
+		{"CommitType", `(feat|fix|chore|ci|docs|refactor|test)`},
+		{"CommitScope", `\(.*\)`},
+		{"CommitTypeModifier", `!`},
+		{"Message", `.*[^\n]`},
+		{"Description", `[^#].*\n`},
 	})
 
 	conventionalCommitParser = participle.MustBuild[ConvCommit](
@@ -43,7 +48,7 @@ var (
 )
 
 type ConvCommit struct {
-	CommitMessage *CommitMessage `@@"\n"`
+	CommitMessage *CommitMessage `@@`
 	Description   []*Description `@@*`
 	Comments      []*Comment     `@@*`
 }
@@ -58,19 +63,21 @@ func (cc *ConvCommit) String() string {
 }
 
 type Description struct {
-	Value string `@Description`
+	Value string "@Description"
 }
 
 type Comment struct {
-	Value string `@comment`
+	Value string "@Comment"
 }
 
 type CommitMessage struct {
-	Type      string `@CommitType`
-	Scope     string `@CommitScope?`
-	Modifier  string `@CommitTypeModifier?`
-	Separator string `@Separator`
-	Message   string `@Message`
+	Type       string "@CommitType"
+	Scope      string "@CommitScope?"
+	Modifier   string "@CommitTypeModifier?"
+	Colon      string "@Colon"
+	Whitespace string "@Whitespace"
+	Message    string `@Message`
+	Newline    string `@Newline+`
 }
 
 func (c *CommitMessage) String() string {
