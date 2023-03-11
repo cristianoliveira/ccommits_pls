@@ -1,4 +1,4 @@
-# ccommits_pls
+# ccommits_pls [![CI Checks](https://github.com/cristianoliveira/ccommits_pls/actions/workflows/checks.yml/badge.svg)](https://github.com/cristianoliveira/ccommits_pls/actions/workflows/checks.yml)
 
 Conventional Commits Language Server (or Conventional Commits "pls") (inspired by [gopls](https://github.com/golang/tools/tree/master/gopls))
 
