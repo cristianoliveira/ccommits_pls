@@ -38,7 +38,7 @@ var (
 		{"CommitType", `(feat|fix|chore|ci|docs|refactor|test)`},
 		{"CommitScope", `\(.*\)`},
 		{"CommitTypeModifier", `!`},
-		{"Description", `[^\n]*`},
+		{"Details", `[^\n]*`},
 	})
 
 	conventionalCommitParser = participle.MustBuild[ConvCommit](
@@ -64,29 +64,24 @@ func (cc *ConvCommit) String() string {
 }
 
 type CommitDetails struct {
-	INL   string `@Newline (@Newline)?` // Initial new line(s)
-	Value string `~"#" (@Description)?`
-	ENL   string `@Newline (@Newline)?` // End new line(s)
+	Value string `~"#"@Newline* @Details? @Newline*`
 }
 
 type Rest struct {
-	Value string `(?!"#") @Description?`
-	ENL   string `@Newline` // End new line(s)
+	Value string `(?!"#") @Details? @Newline`
 }
 
 type Comment struct {
-	_       string `@Newline?`
-	Value   string "@Comment"
-	Newline string `@Newline?`
+	Value string "@Comment @Newline"
 }
 
 type CommitTitle struct {
-	Type              string "@CommitType"
-	Scope             string "@CommitScope?"
-	Modifier          string "@CommitTypeModifier?"
-	Colon             string "@Colon"
-	Whitespace        string "@Whitespace"
-	CommitDescription string `@Description`
+	Type       string "@CommitType"
+	Scope      string "@CommitScope?"
+	Modifier   string "@CommitTypeModifier?"
+	Colon      string "@Colon"
+	Whitespace string "@Whitespace"
+	Details    string `@Details`
 }
 
 func (c *CommitTitle) String() string {
