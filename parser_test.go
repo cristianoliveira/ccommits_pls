@@ -35,7 +35,7 @@ func TestConventionalCommitsParser(t *testing.T) {
 			{
 				name:                 "it fails when missing message",
 				commitMessage:        "feat",
-				expectedErrorMessage: "unexpected token \"<EOF>\" (expected <colon> <whitespace> <commitdescription> <newline>+)",
+				expectedErrorMessage: "unexpected token \"<EOF>\" (expected <colon> <whitespace> <text>)",
 			},
 			{
 				name:                 "it fails when missing <colon> ':'",
@@ -45,18 +45,18 @@ func TestConventionalCommitsParser(t *testing.T) {
 			{
 				name:                 "it fails when missing space between <colon> and <commitdescription>",
 				commitMessage:        "feat:my message\n",
-				expectedErrorMessage: "unexpected token \"my message\"",
+				expectedErrorMessage: "unexpected token \"my message\" (expected <whitespace>",
 			},
 			{
 				name: "it fails when missing space between <colon> and CommitDescription (multiple lines)",
 				commitMessage: `feat:without space
 
-			# Please enter the commit message for your changes. Lines starting
-			# with '#' will be ignored, and an empty message aborts the commit.
-			#
-			# On branch main"b
-			# Your branch is up to date with 'origin/main'.`,
-				expectedErrorMessage: "unexpected token \"without space\" (expected <whitespace> <commitdescription> <newline>+)",
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch main"b
+# Your branch is up to date with 'origin/main'.`,
+				expectedErrorMessage: "unexpected token \"without space\" (expected <whitespace> <text>)",
 			},
 		}
 
@@ -115,7 +115,6 @@ func TestConventionalCommitsParser(t *testing.T) {
 					Colon:             ":",
 					Whitespace:        " ",
 					CommitDescription: "some foo bar",
-					Newline:           "\n",
 				},
 			},
 			{
@@ -127,7 +126,6 @@ func TestConventionalCommitsParser(t *testing.T) {
 					Colon:             ":",
 					Whitespace:        " ",
 					CommitDescription: "some foo bar",
-					Newline:           "\n\n",
 				},
 			},
 			{
@@ -140,7 +138,6 @@ func TestConventionalCommitsParser(t *testing.T) {
 					Colon:             ":",
 					Whitespace:        " ",
 					CommitDescription: "some foo bar",
-					Newline:           "\n\n",
 				},
 			},
 			{
@@ -157,7 +154,6 @@ func TestConventionalCommitsParser(t *testing.T) {
 					Colon:             ":",
 					Whitespace:        " ",
 					CommitDescription: "foobar",
-					Newline:           "\n\n",
 				},
 			},
 			{
@@ -171,21 +167,22 @@ index a4128be..3fcc654 100644
 --- a/parser.go
 +++ b/parser.go
 @@ -32,6 +32,7 @@ var (
- 		{"Whitespace", "\s"},
- 		{"Colon", ":"},
- 		{"Comment", "[#][^\n]*"},
+{"Whitespace", "\s"},
+{"Colon", ":"},
+{"Comment", "[#][^\n]*"},
 +		{"GitDiff", "^diff.*\n"},
 
- 		// Keywords
- 		{"CommitType", "(feat|fix|chore|ci|docs|refactor|test)"},
+// Keywords
+{"CommitType", "(feat|fix|chore|ci|docs|refactor|test)"},
 @@ -51,6 +52,7 @@ type ConvCommit struct {
- 	CommitTitle *CommitTitle "@@"
- 	CommitDetails   []*CommitDetails "@@*"
- 	Comments      []*Comment     "@@*"
+CommitTitle *CommitTitle "@@"
+CommitDetails   []*CommitDetails "@@*"
+Comments      []*Comment     "@@*"
 +	Diff          []*string      "@GitDiff?"
- }
+}
 
- func (cc *ConvCommit) String() string {`,
+func (cc *ConvCommit) String() string {
+`,
 				expectedCommitMessage: CommitTitle{
 					Type:              "feat",
 					Scope:             "",
@@ -193,7 +190,44 @@ index a4128be..3fcc654 100644
 					Colon:             ":",
 					Whitespace:        " ",
 					CommitDescription: "foobar",
-					Newline:           "\n\n",
+				},
+			},
+			{
+				name: "it accepts a commit body after commit title",
+				commitMessage: `feat!: foobar
+
+This is completly optional but possible
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+diff --git a/parser.go b/parser.go
+index a4128be..3fcc654 100644
+--- a/parser.go
++++ b/parser.go
+@@ -32,6 +32,7 @@ var (
+{"Whitespace", "\s"},
+{"Colon", ":"},
+{"Comment", "[#][^\n]*"},
++		{"GitDiff", "^diff.*\n"},
+
+// Keywords
+{"CommitType", "(feat|fix|chore|ci|docs|refactor|test)"},
+@@ -51,6 +52,7 @@ type ConvCommit struct {
+CommitTitle *CommitTitle "@@"
+CommitDetails   []*CommitDetails "@@*"
+Comments      []*Comment     "@@*"
++	Diff          []*string      "@GitDiff?"
+}
+
+func (cc *ConvCommit) String() string {
+`,
+				expectedCommitMessage: CommitTitle{
+					Type:              "feat",
+					Scope:             "",
+					Modifier:          "!",
+					Colon:             ":",
+					Whitespace:        " ",
+					CommitDescription: "foobar",
 				},
 			},
 		}

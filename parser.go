@@ -28,6 +28,7 @@ func RemoveParentesis(types ...string) participle.Option {
 var (
 	convCommitLexer = lexer.MustSimple([]lexer.SimpleRule{
 		// Fixed grammar
+		{"Tab", `\t`},
 		{"Newline", `\n`},
 		{"Whitespace", `[\s\t]+`},
 		{"Colon", `:`},
@@ -37,9 +38,7 @@ var (
 		{"CommitType", `(feat|fix|chore|ci|docs|refactor|test)`},
 		{"CommitScope", `\(.*\)`},
 		{"CommitTypeModifier", `!`},
-		{"CommitDescription", `.*[^\n]`},
-
-		{"CommitDetails", `[^#].*`},
+		{"Text", `[^\n]*`},
 	})
 
 	conventionalCommitParser = participle.MustBuild[ConvCommit](
@@ -49,9 +48,10 @@ var (
 )
 
 type ConvCommit struct {
-	CommitTitle   *CommitTitle     `@@`
-	CommitDetails []*CommitDetails `@@*`
-	Comments      []*Comment       `@@*`
+	CommitTitle   *CommitTitle   `@@`
+	CommitDetails *CommitDetails `@@`
+	Comments      []*Comment     `@@*`
+	Rest          []*Rest        `@@*`
 }
 
 func (cc *ConvCommit) String() string {
@@ -64,11 +64,18 @@ func (cc *ConvCommit) String() string {
 }
 
 type CommitDetails struct {
-	Value   string "@CommitDetails"
-	Newline string `@Newline?`
+	INL   string `@Newline (@Newline)?` // Initial new line(s)
+	Value string `~"#" (@Text)?`
+	ENL   string `@Newline (@Newline)?` // End new line(s)
+}
+
+type Rest struct {
+	Value string `(?!"#") @Text?`
+	ENL   string `@Newline` // End new line(s)
 }
 
 type Comment struct {
+	_       string `@Newline?`
 	Value   string "@Comment"
 	Newline string `@Newline?`
 }
@@ -79,8 +86,7 @@ type CommitTitle struct {
 	Modifier          string "@CommitTypeModifier?"
 	Colon             string "@Colon"
 	Whitespace        string "@Whitespace"
-	CommitDescription string `@CommitDescription`
-	Newline           string `@Newline+`
+	CommitDescription string `@Text`
 }
 
 func (c *CommitTitle) String() string {
@@ -152,13 +158,7 @@ func NewViolationError(filename string, origError error) *ViolationError {
 }
 
 func ConvetionalCommitParse(file, message string) (*ConvCommit, error) {
-	// It ignores git diff when parsing.
-	gitDiffStartPoint := strings.Index(message, "diff --git")
-	if gitDiffStartPoint <= 0 {
-		gitDiffStartPoint = len(message)
-	}
-
-	values, err := conventionalCommitParser.ParseString(file, message[0:gitDiffStartPoint])
+	values, err := conventionalCommitParser.ParseString(file, message)
 
 	if err != nil {
 		return values, NewViolationError(file, err)
