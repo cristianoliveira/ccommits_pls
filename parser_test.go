@@ -35,7 +35,7 @@ func TestConventionalCommitsParser(t *testing.T) {
 			{
 				name:                 "it fails when missing message",
 				commitMessage:        "feat",
-				expectedErrorMessage: "unexpected token \"<EOF>\" (expected <colon> <whitespace> <text>)",
+				expectedErrorMessage: "unexpected token \"<EOF>\" (expected <colon> <whitespace> <description>)",
 			},
 			{
 				name:                 "it fails when missing <colon> ':'",
@@ -56,7 +56,7 @@ func TestConventionalCommitsParser(t *testing.T) {
 #
 # On branch main"b
 # Your branch is up to date with 'origin/main'.`,
-				expectedErrorMessage: "unexpected token \"without space\" (expected <whitespace> <text>)",
+				expectedErrorMessage: "unexpected token \"without space\" (expected <whitespace> <description>)",
 			},
 		}
 

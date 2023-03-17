@@ -38,7 +38,7 @@ var (
 		{"CommitType", `(feat|fix|chore|ci|docs|refactor|test)`},
 		{"CommitScope", `\(.*\)`},
 		{"CommitTypeModifier", `!`},
-		{"Text", `[^\n]*`},
+		{"Description", `[^\n]*`},
 	})
 
 	conventionalCommitParser = participle.MustBuild[ConvCommit](
@@ -65,12 +65,12 @@ func (cc *ConvCommit) String() string {
 
 type CommitDetails struct {
 	INL   string `@Newline (@Newline)?` // Initial new line(s)
-	Value string `~"#" (@Text)?`
+	Value string `~"#" (@Description)?`
 	ENL   string `@Newline (@Newline)?` // End new line(s)
 }
 
 type Rest struct {
-	Value string `(?!"#") @Text?`
+	Value string `(?!"#") @Description?`
 	ENL   string `@Newline` // End new line(s)
 }
 
@@ -86,7 +86,7 @@ type CommitTitle struct {
 	Modifier          string "@CommitTypeModifier?"
 	Colon             string "@Colon"
 	Whitespace        string "@Whitespace"
-	CommitDescription string `@Text`
+	CommitDescription string `@Description`
 }
 
 func (c *CommitTitle) String() string {
@@ -158,7 +158,13 @@ func NewViolationError(filename string, origError error) *ViolationError {
 }
 
 func ConvetionalCommitParse(file, message string) (*ConvCommit, error) {
-	values, err := conventionalCommitParser.ParseString(file, message)
+	// It ignores git diff when parsing.
+	gitDiffStartPoint := strings.Index(message, "diff --git")
+	if gitDiffStartPoint <= 0 {
+		gitDiffStartPoint = len(message)
+	}
+
+	values, err := conventionalCommitParser.ParseString(file, message[0:gitDiffStartPoint])
 
 	if err != nil {
 		return values, NewViolationError(file, err)
