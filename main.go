@@ -16,27 +16,6 @@ var handler protocol.Handler
 var inMemoryDocument []byte
 
 func main() {
-	// ex, err := os.Executable()
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// exPath := filepath.Dir(ex)
-
-	// log.Println("CCommits log folder: ", exPath)
-	// logFilePath := fmt.Sprintf("%s/%s", exPath, "log.txt")
-	// log.Println("CCommits initial log file: ", logFilePath)
-	// // open log file
-	// logFile, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
-	// if err != nil {
-	// 	log.Panic(err)
-	// }
-	// defer logFile.Close()
-
-	// log.SetOutput(logFile)
-
-	// optional: log date-time, filename, and line number
-	log.SetFlags(log.Lshortfile | log.LstdFlags)
-
 	handler = protocol.Handler{
 		Initialize:            initialize,
 		Initialized:           initialized,
